@@ -1,7 +1,12 @@
+const moment = require("moment");
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const NoteSchema = new Schema({
+  recordId:{
+    type: String,
+    required: true
+  },
   note: {
     type: String,
     required: true
@@ -11,11 +16,18 @@ const NoteSchema = new Schema({
     required: true
   },
   timestamp: {
-    type: String,
+    type: Date,
     required: true
   },
-}, { versionKey: false });
-
-const Note = mongoose.model('note', NoteSchema);
+}, {
+    toJSON: {
+      transform: (doc, ret) => {
+        ret.timestamp = moment(ret.timestamp,'MM-DD-YYYY', true).format();
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+      }
+    }
+  });
 
 module.exports = mongoose.model("note", NoteSchema);

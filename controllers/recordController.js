@@ -1,18 +1,17 @@
+const moment = require("moment");
 const MaintenanceRecord = require("models/maintenanceRecordModel");
 
-function isEmpty(obj) {
-  for (var key in obj) {
-    if (obj.hasOwnProperty(key)) return false;
-  }
-  return true;
-}
-
-function hasInvalidKey(obj) {
-  for (var key in obj) {
-    if (obj.hasOwnProperty(key)) return false;
-  }
-  return true;
-}
+const recordEnum = {
+  UNIT: "unit",
+  COMPLETEDON: "completedOn",
+  MAINTENANCETYPE: "maintenanceType",
+  CUSTOMTYPE: "customType",
+  NEXTDUE: "nextDue",
+  SYSTEMENGINEHOURS: "systemEngineHours",
+  ACTUALENGINEHOURS: "actualEngineHours",
+  ENGINEHOURSNEXTDUE: "engineHoursNextDue",
+  CONDUCTEDBY: "conductedBy"
+};
 
 exports.newRecord = async (req, res, next) => {
   try {
@@ -30,13 +29,14 @@ exports.newRecord = async (req, res, next) => {
 
     const newRecord = new MaintenanceRecord({
       unit,
-      completedOn,
+      completedOn: moment(completedOn, "MM-DD-YYYY", true).format(),
       maintenanceType,
       customType,
-      nextDue,
+      nextDue: moment(nextDue, "MM-DD-YYYY", true).format(),
       actualEngineHours,
       engineHoursNextDue,
-      conductedBy: user._id
+      conductedBy: user._id,
+      conductedByFormat: `${user.firstName} ${user.lastName}`
     });
 
     await newRecord.save();
@@ -48,27 +48,38 @@ exports.newRecord = async (req, res, next) => {
 };
 
 exports.getRecords = async (req, res, next) => {
-  let records;
+  try {
+    const query = req.query;
+    const names = Object.getOwnPropertyNames(query);
+    const fields = Object.values(recordEnum);
 
-  if (isEmpty(req.query)) {
-    records = await MaintenanceRecord.find({});
-  } else {
-      const names = Object.getOwnPropertyNames(req.query);
-    const {
-      unit,
-      completedOn,
-      maintenanceType,
-      nextDue,
-      customType,
-      actualEngineHours,
-      engineHoursNextDue
-    } = req.query;
+    const set = [...new Set([...names, ...fields])];
 
-    records = await MaintenanceRecord.find({
-      unit,completedOn
-    });
+    if (fields.length !== set.length)
+      throw new Error("Invalid search parameter(s)");
+
+    if (query.conductedBy) {
+      query.conductedByFormat = query.conductedBy;
+      delete query.conductedBy;
+    }
+
+    if (query.completedOn) {
+      query.completedOn = moment(
+        query.completedOn,
+        "MM-DD-YYYY",
+        true
+      ).format();
+    }
+
+    if (query.nextDue) {
+      query.nextDue = moment(query.nextDue, "MM-DD-YYYY", true).format();
+    }
+
+    const records = await MaintenanceRecord.find(query);
+    res.status(200).json(records);
+  } catch (error) {
+    next(error);
   }
-  res.status(200).json(records);
 };
 
 exports.getRecord = async (req, res, next) => {
@@ -97,14 +108,16 @@ exports.updateRecord = async (req, res, next) => {
     const recordId = req.params.recordId;
     await MaintenanceRecord.findByIdAndUpdate(recordId, {
       unit,
-      completedOn,
+      completedOn: moment(completedOn, "MM-DD-YYYY", true).format(),
       maintenanceType,
       customType,
-      nextDue,
+      nextDue: moment(nextDue, "MM-DD-YYYY", true).format(),
       actualEngineHours,
       engineHoursNextDue
     });
+
     const record = await MaintenanceRecord.findById(recordId);
+
     res.status(200).json(record);
   } catch (error) {
     next(error);
