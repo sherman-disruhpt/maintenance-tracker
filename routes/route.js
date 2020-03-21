@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
+const multer = require('multer');
 const auth = require("middleware/auth");
 const upload = require("middleware/upload");
 const userController = require("controllers/userController");
 const recordController = require("controllers/recordController");
 const noteController = require("controllers/noteController");
-const pictureController = require("controllers/pictureController")
+const pictureController = require("controllers/pictureController");
 
 router.post(
   "/users",
@@ -14,7 +15,7 @@ router.post(
   userController.signup
 );
 
-router.post("/auth", auth.authenticate);
+router.post("/auth", multer().none(), auth.authenticate);
 
 router.post(
   "/records",
@@ -29,8 +30,8 @@ router.post(
   auth.checkAccess,
   noteController.newNote
 );
- 
- router.post(
+
+router.post(
   "/records/:recordId/pictures",
   auth.allowIfAuthenticated,
   auth.checkAccess,
