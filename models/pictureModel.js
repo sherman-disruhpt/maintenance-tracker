@@ -9,7 +9,16 @@ const MetadataSchema = new Schema({
   caption: {
     type: String
   }
-}, { versionKey: false });
+}, {
+    toJSON: {
+      transform: (doc, ret) => {
+        ret.id = ret._id;
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+      }
+    }
+  });
 
 const PictureSchema = new Schema({
   metadata: MetadataSchema

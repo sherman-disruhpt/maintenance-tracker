@@ -53,6 +53,20 @@ router.get(
 );
 
 router.get(
+  "/records/:recordId/pictures",
+  auth.allowIfAuthenticated,
+  auth.checkAccess,
+  pictureController.getPicturesMetadata
+);
+
+router.get(
+  "/records/:recordId/pictures/:pictureId",
+  auth.allowIfAuthenticated,
+  auth.checkAccess,
+  pictureController.getPicture
+);
+
+router.get(
   "/records/:recordId",
   auth.allowIfAuthenticated,
   auth.checkAccess,
@@ -73,8 +87,11 @@ router.delete(
   recordController.deleteRecord
 );
 
-
-
-
+router.delete(
+  "/records/:recordId/pictures/:pictureId",
+  auth.allowIfAuthenticated,
+  auth.checkAccess,
+  pictureController.deletePicture
+);
 
 module.exports = router;

@@ -12,29 +12,31 @@ const routes = require("routes/route.js");
 const jwt = require("middleware/jwt");
 const errorHandler = require("middleware/errorHandler");
 
-mongoose
-  .connect(process.env.CONNECTION_STRING, {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true
-  })
-  .then(() => {
-    console.log("Connected to the Database successfully");
+(async () => {
+  await mongoose.connect(
+    `${process.env.DB_CONNECTION}/${process.env.DB_NAME}`,
+    {
+      useNewUrlParser: true,
+      useFindAndModify: false,
+      useUnifiedTopology: true
+    }
+  );
+
+  app.use(bodyParser.urlencoded({ extended: false }));
+  app.use(bodyParser.json());
+  app.use(cors());
+
+  // use JWT auth to secure the api
+  app.use(jwt);
+
+  // api routes
+  app.use("/", routes);
+
+  // global error handler
+  app.use(errorHandler);
+
+  app.listen(process.env.PORT, function() {
+    console.log("Server listening on port " + process.env.PORT);
   });
+})();
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-app.use(cors());
-
-// use JWT auth to secure the api
-app.use(jwt);
-
-// api routes
-app.use("/", routes);
-
-// global error handler
-app.use(errorHandler);
-
-app.listen(process.env.PORT, function() {
-  console.log("Server listening on port " + process.env.PORT);
-});

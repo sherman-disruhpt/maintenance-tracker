@@ -1,8 +1,49 @@
 const jwt = require("jsonwebtoken");
+const AccessControl = require("accesscontrol");
 const bcrypt = require("bcrypt");
-const { roles } = require("roles");
 const User = require("models/userModel");
-const url = require('url');
+const url = require("url");
+
+const roles = (() => {
+  const ac = new AccessControl();
+
+  ac.grant("view").readAny("records");
+
+  ac.grant("search").readAny("records");
+
+  ac.grant("list").readAny("records");
+
+  ac.grant("add").createAny("records");
+
+  ac.grant("update").updateAny("records");
+
+  ac.grant("delete").deleteAny("records");
+
+  ac.grant("read-only")
+    .extend("view")
+    .extend("search")
+    .extend("list");
+
+  ac.grant("write")
+    .extend("read-only")
+    .extend("add")
+    .extend("update")
+    .extend("delete");
+
+  ac.grant("admin")
+    .extend("read-only")
+    .extend("write")
+    .createAny("users")
+    .readAny("users")
+    .updateAny("users")
+    .deleteAny("users");
+
+  return ac;
+})();
+
+const validatePassword = async (plainPassword, hashedPassword) => {
+  return await bcrypt.compare(plainPassword, hashedPassword);
+};
 
 function PermissionException() {
   this.message = "You don't have enough permission to perform this action";
@@ -12,10 +53,6 @@ function PermissionException() {
 function AuthenticationException() {
   this.message = "You need to be authenticated in to access this route";
   this.name = "Authentication";
-}
-
-async function validatePassword(plainPassword, hashedPassword) {
-  return await bcrypt.compare(plainPassword, hashedPassword);
 }
 
 exports.authenticate = async (req, res, next) => {
@@ -50,8 +87,8 @@ exports.allowIfAuthenticated = async (req, res, next) => {
 };
 
 exports.checkAccess = async (req, res, next) => {
-  const route = url.parse(req.url,false,true).pathname.split('/')[1];
-  
+  const route = url.parse(req.url, false, true).pathname.split("/")[1];
+
   let action;
 
   switch (req.method) {

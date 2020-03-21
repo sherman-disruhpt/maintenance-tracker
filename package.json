@@ -27,11 +27,11 @@
     "express-jwt": "^5.3.1",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.24.0",
+    "mongodb": "^3.5.5",
     "mongoose": "^5.9.5",
     "multer": "^1.4.2",
     "multer-gridfs-storage": "^4.0.2",
     "rootpath": "^0.1.2",
-    "url": "^0.11.0",
-    "util": "^0.12.2"
+    "url": "^0.11.0"
   }
 }

@@ -8,12 +8,10 @@ function ExpiredException() {
 }
 
 module.exports = async (req, res, next) => {
-  
   if (req.headers["x-access-token"]) {
     try {
-      
       const accessToken = req.headers["x-access-token"];
-     
+
       const { userId, exp } = await jwt.verify(
         accessToken,
         process.env.JWT_SECRET
@@ -23,7 +21,7 @@ module.exports = async (req, res, next) => {
         throw new ExpiredException();
       }
       res.locals.loggedInUser = await User.findById(userId);
-     
+
       next();
     } catch (error) {
       next(error);
