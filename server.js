@@ -1,20 +1,26 @@
-require('rootpath')();
+require("rootpath")();
 require("dotenv").config({
-  path: require('path').join(__dirname, "./.env")
+  path: require("path").join(__dirname, "./.env")
 });
 
-const express = require('express');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
+const express = require("express");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 const app = express();
-const cors = require('cors');
-const routes = require('routes/route.js');
-const jwt = require('middleware/jwt');
-const errorHandler = require('middleware/errorHandler');
+const cors = require("cors");
+const routes = require("routes/route.js");
+const jwt = require("middleware/jwt");
+const errorHandler = require("middleware/errorHandler");
 
-mongoose.connect(process.env.CONNECTION_STRING, { useNewUrlParser: true }).then(() => {
-  console.log('Connected to the Database successfully');
-});
+mongoose
+  .connect(process.env.CONNECTION_STRING, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true
+  })
+  .then(() => {
+    console.log("Connected to the Database successfully");
+  });
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -24,11 +30,11 @@ app.use(cors());
 app.use(jwt);
 
 // api routes
-app.use('/', routes);
+app.use("/", routes);
 
 // global error handler
 app.use(errorHandler);
 
-app.listen(process.env.PORT, function () {
-    console.log('Server listening on port ' + process.env.PORT);
+app.listen(process.env.PORT, function() {
+  console.log("Server listening on port " + process.env.PORT);
 });

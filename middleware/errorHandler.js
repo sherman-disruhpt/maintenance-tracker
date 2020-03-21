@@ -9,8 +9,12 @@ module.exports = (err, req, res, next) => {
     return res.status(401).json({ message: "Invalid Token" });
   }
 
+  if (err.name === "LIMIT_UNEXPECTED_FILE") {
+    return res.status(413).json({ message: "Too many photos to upload." });
+  }
+
   if (err.name === "Expired" || err.name === "Permission") {
-    // jwt authentication error
+    // jwt authentication/authorization error
     return res.status(401).json({ message: err.message });
   }
 

@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("middleware/auth");
+const upload = require("middleware/upload");
 const userController = require("controllers/userController");
 const recordController = require("controllers/recordController");
 const noteController = require("controllers/noteController");
+const pictureController = require("controllers/pictureController")
 
 router.post(
   "/users",
@@ -26,6 +28,14 @@ router.post(
   auth.allowIfAuthenticated,
   auth.checkAccess,
   noteController.newNote
+);
+ 
+ router.post(
+  "/records/:recordId/pictures",
+  auth.allowIfAuthenticated,
+  auth.checkAccess,
+  upload,
+  pictureController.newPicture
 );
 
 router.get(
